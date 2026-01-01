@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Global Weather Station Control</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      text-align: center;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      min-height: 100vh;
+    }
+    
+    h1 {
+      font-size: 3em;
+      margin: 30px 0;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .section {
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 30px;
+      margin: 30px 0;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+    
+    .section h2 {
+      font-size: 1.8em;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+    
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    button {
+      padding: 25px 15px;
+      font-size: 1.3em;
+      border: none;
+      border-radius: 15px;
+      cursor: pointer;
+      background: white;
+      color: #667eea;
+      font-weight: bold;
+      transition: all 0.3s;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.3);
+    }
+    
+    button:active {
+      transform: translateY(-1px);
+    }
+    
+    .refresh-btn {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      color: white;
+      font-size: 1.5em;
+      padding: 20px 40px;
+      margin: 20px 0;
+    }
+    
+    .location-form {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+    
+    input {
+      padding: 15px;
+      font-size: 1.1em;
+      border: none;
+      border-radius: 10px;
+      width: 200px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .submit-btn {
+      padding: 15px 30px;
+      font-size: 1.1em;
+    }
+    
+    #status {
+      margin-top: 30px;
+      font-size: 1.3em;
+      padding: 20px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+    
+    .emoji {
+      font-size: 1.3em;
+      margin-right: 8px;
+    }
+    
+    .preset-locations {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+    
+    .preset-btn {
+      padding: 12px 20px;
+      font-size: 1em;
+      background: rgba(255,255,255,0.9);
+    }
+    
+    .weather-data {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .weather-card {
+      background: rgba(255,255,255,0.2);
+      padding: 20px;
+      border-radius: 15px;
+      backdrop-filter: blur(5px);
+    }
+    
+    .weather-value {
+      font-size: 2em;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+    
+    .connection-status {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 8px;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .online {
+      background: #4ade80;
+      box-shadow: 0 0 10px #4ade80;
+    }
+    
+    .offline {
+      background: #ef4444;
+      box-shadow: 0 0 10px #ef4444;
+      animation: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🌤️ Weather Station</h1>
+    <div style="font-size: 1.2em; margin: -20px 0 20px 0;">
+      <span class="connection-status" id="connectionStatus"></span>
+      <span id="statusText">Connecting...</span>
+    </div>
+    
+    <div class="section">
+      <h2>📊 Current Weather</h2>
+      <div class="weather-data">
+        <div class="weather-card">
+          <div>🌡️ Temperature</div>
+          <div class="weather-value" id="temp">--</div>
+        </div>
+        <div class="weather-card">
+          <div>💧 Humidity</div>
+          <div class="weather-value" id="humidity">--</div>
+        </div>
+        <div class="weather-card">
+          <div>☁️ Condition</div>
+          <div class="weather-value" id="condition" style="font-size: 1.2em;">--</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>📺 Screen View</h2>
+      <div class="button-grid">
+        <button onclick="changeView('CONDITION')">
+          <span class="emoji">☁️</span><br>Condition
+        </button>
+        
+        <button onclick="changeView('TEMP')">
+          <span class="emoji">🌡️</span><br>Temperature
+        </button>
+        
+        <button onclick="changeView('FEELS')">
+          <span class="emoji">🤔</span><br>Feels Like
+        </button>
+        
+        <button onclick="changeView('HUMIDITY')">
+          <span class="emoji">💧</span><br>Humidity
+        </button>
+        
+        <button onclick="changeView('PRESSURE')">
+          <span class="emoji">📊</span><br>Pressure
+        </button>
+        
+        <button onclick="changeView('WIND')">
+          <span class="emoji">💨</span><br>Wind Speed
+        </button>
+        
+        <button onclick="changeView('AUTO')" style="grid-column: span 2; background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);">
+          <span class="emoji">🔄</span><br>Auto Cycle
+        </button>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2>📍 Change Location</h2>
+      
+      <div class="location-form">
+        <input type="text" id="latitude" placeholder="Latitude" value="17.2391">
+        <input type="text" id="longitude" placeholder="Longitude" value="78.4358">
+        <button class="submit-btn" onclick="updateLocation()">
+          <span class="emoji">📌</span> Update
+        </button>
+      </div>
+      
+      <div class="preset-locations">
+        <button class="preset-btn" onclick="setPreset(40.7128, -74.0060)">🗽 New York</button>
+        <button class="preset-btn" onclick="setPreset(51.5074, -0.1278)">🇬🇧 London</button>
+        <button class="preset-btn" onclick="setPreset(35.6762, 139.6503)">🗼 Tokyo</button>
+        <button class="preset-btn" onclick="setPreset(28.6139, 77.2090)">🇮🇳 Delhi</button>
+        <button class="preset-btn" onclick="setPreset(17.2391, 78.4358)">🏠 Hyderabad</button>
+      </div>
+    </div>
+    
+    <button class="refresh-btn" onclick="refreshWeather()">
+      <span class="emoji">🔄</span> Refresh Weather Now
+    </button>
+    
+    <div id="status">Ready to control your weather station globally! 🌍</div>
+  </div>
+  
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+    // Your Firebase Configuration
+    const firebaseConfig = {
+      apiKey: " ",
+      authDomain: " ",
+      databaseURL: " ",
+      projectId: " ",
+      storageBucket: " ",
+      messagingSenderId: " ",
+      appId: " "
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Listen for ESP32 status
+    const statusRef = ref(db, 'weather/status');
+    onValue(statusRef, (snapshot) => {
+      const status = snapshot.val();
+      const statusEl = document.getElementById('connectionStatus');
+      const statusText = document.getElementById('statusText');
+      
+      if (status === 'online') {
+        statusEl.className = 'connection-status online';
+        statusText.textContent = 'ESP32 Online';
+      } else {
+        statusEl.className = 'connection-status offline';
+        statusText.textContent = 'ESP32 Offline';
+      }
+    });
+
+    // Listen for weather data updates
+    const tempRef = ref(db, 'weather/data/temp');
+    onValue(tempRef, (snapshot) => {
+      const temp = snapshot.val();
+      if (temp !== null && temp !== undefined) {
+        document.getElementById('temp').textContent = temp.toFixed(1) + '°C';
+      }
+    });
+
+    const humidityRef = ref(db, 'weather/data/humidity');
+    onValue(humidityRef, (snapshot) => {
+      const humidity = snapshot.val();
+      if (humidity !== null && humidity !== undefined) {
+        document.getElementById('humidity').textContent = humidity + '%';
+      }
+    });
+
+    const conditionRef = ref(db, 'weather/data/condition');
+    onValue(conditionRef, (snapshot) => {
+      const condition = snapshot.val();
+      if (condition) {
+        document.getElementById('condition').textContent = condition;
+      }
+    });
+
+    // Make functions global
+    window.changeView = function(view) {
+      document.getElementById('status').innerHTML = 
+        '⏳ Changing view to <strong>' + view + '</strong>...';
+      
+      set(ref(db, 'weather/command'), view)
+        .then(() => {
+          document.getElementById('status').innerHTML = 
+            '✅ Command sent: <strong>' + view + '</strong>';
+        })
+        .catch((error) => {
+          document.getElementById('status').innerHTML = 
+            '❌ Error: ' + error.message;
+        });
+    };
+    
+    window.updateLocation = function() {
+      const lat = document.getElementById('latitude').value;
+      const lon = document.getElementById('longitude').value;
+      
+      if (!lat || !lon) {
+        document.getElementById('status').innerHTML = 
+          '❌ Please enter both latitude and longitude!';
+        return;
+      }
+      
+      document.getElementById('status').innerHTML = 
+        '⏳ Updating location...';
+      
+      set(ref(db, 'weather/location'), lat + ',' + lon)
+        .then(() => {
+          document.getElementById('status').innerHTML = 
+            '✅ Location updated! Lat: ' + lat + ', Lon: ' + lon;
+        })
+        .catch((error) => {
+          document.getElementById('status').innerHTML = 
+            '❌ Error: ' + error.message;
+        });
+    };
+    
+    window.setPreset = function(lat, lon) {
+      document.getElementById('latitude').value = lat;
+      document.getElementById('longitude').value = lon;
+      updateLocation();
+    };
+    
+    window.refreshWeather = function() {
+      document.getElementById('status').innerHTML = 
+        '⏳ Refreshing weather data...';
+      
+      set(ref(db, 'weather/command'), 'REFRESH')
+        .then(() => {
+          document.getElementById('status').innerHTML = 
+            '✅ Refresh command sent!';
+        })
+        .catch((error) => {
+          document.getElementById('status').innerHTML = 
+            '❌ Error: ' + error.message;
+        });
+    };
+  </script>
+</body>
+</html>
