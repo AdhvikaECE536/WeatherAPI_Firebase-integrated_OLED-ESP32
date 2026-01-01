@@ -4,11 +4,9 @@ The repository contains complete IoT weather station system using ESP32, OLED di
 
 ## 📂 Repository Structure
 
-```
 - `1. rules`                    # # Firebase database rules
 - `2. arduino_code.ino`         # ESP32 firmware with Firebase
 - `3. index.html`               # Web control panel
-```
 
 
 ## ✨ Features
